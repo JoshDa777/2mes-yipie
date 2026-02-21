@@ -216,21 +216,21 @@ gift.addEventListener("pointerup", ()=>{
 
 /* --------- AGITAR DE VERDAD EL CELULAR (acelerómetro) --------- */
 
-if(window.DeviceMotionEvent){
+if (window.DeviceMotionEvent) {
 
-    try{
-        if(typeof DeviceMotionEvent.requestPermission === "function"){
-
-            gift.addEventListener("click", ()=>{
-                DeviceMotionEvent.requestPermission().catch(()=>{}).then(()=>{
-                    startMotion();
-                });
-            });
-
-        }else{
+    const enableMotion = async () => {
+        try {
+            if (typeof DeviceMotionEvent.requestPermission === "function") {
+                const response = await DeviceMotionEvent.requestPermission();
+                if (response !== "granted") return;
+            }
             startMotion();
+        } catch (e) {
+            console.log(e);
         }
-    }catch(e){}
+    };
+
+    gift.addEventListener("pointerdown", enableMotion, { once: true });
 }
 
 function startMotion(){
