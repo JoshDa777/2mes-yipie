@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Para Hinita 💖</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(160deg,#ff9a9e,#fad0c4);
+    font-family: system-ui, sans-serif;
+    overflow:hidden;
+}
+
+.scene{
+    text-align:center;
+}
+
+h1{
+    color:#fff;
+    margin-bottom:20px;
+    text-shadow:0 4px 10px rgba(0,0,0,.2);
+}
+
+/* Caja de regalo */
+.gift{
+    width:160px;
+    height:160px;
+    background:#ff4d6d;
+    border-radius:16px;
+    position:relative;
+    margin:auto;
+    cursor:pointer;
+    box-shadow:0 15px 35px rgba(0,0,0,.25);
+    transition:transform .1s;
+    user-select:none;
+}
+
+.gift::before{
+    content:"";
+    position:absolute;
+    width:30px;
+    height:160px;
+    background:#ffd166;
+    left:50%;
+    transform:translateX(-50%);
+    border-radius:6px;
+}
+
+.gift::after{
+    content:"";
+    position:absolute;
+    width:160px;
+    height:30px;
+    background:#ffd166;
+    top:50%;
+    transform:translateY(-50%);
+    border-radius:6px;
+}
+
+.bow{
+    position:absolute;
+    top:-18px;
+    left:50%;
+    transform:translateX(-50%);
+    width:50px;
+    height:30px;
+    background:#ffd166;
+    border-radius:50% 50% 40% 40%;
+}
+
+.shaking{
+    animation:shake .15s infinite;
+}
+
+@keyframes shake{
+    0%{transform:translateX(0)}
+    25%{transform:translateX(-6px)}
+    50%{transform:translateX(6px)}
+    75%{transform:translateX(-6px)}
+    100%{transform:translateX(0)}
+}
+
+.instructions{
+    margin-top:18px;
+    color:#fff;
+    font-size:15px;
+}
+
+.message{
+    max-width:90vw;
+    width:380px;
+    background:white;
+    padding:26px;
+    border-radius:18px;
+    box-shadow:0 20px 40px rgba(0,0,0,.25);
+    display:none;
+    animation:appear .8s ease forwards;
+}
+
+@keyframes appear{
+    from{opacity:0; transform:scale(.85)}
+    to{opacity:1; transform:scale(1)}
+}
+
+.message h2{
+    color:#ff4d6d;
+    margin-top:0;
+}
+
+.heart{
+    font-size:38px;
+    margin-top:10px;
+}
+</style>
+</head>
+<body>
+
+<div class="scene">
+
+    <h1>Para ti, Hinita 🎁</h1>
+
+    <div class="gift" id="gift">
+        <div class="bow"></div>
+    </div>
+
+    <div class="instructions" id="instructions">
+        Toca el regalo y agítalo con el dedo 💫
+    </div>
+
+    <div class="message" id="message">
+        <h2>Hinita 💖</h2>
+
+        <p>
+        Hoy cumplimos dos meses…<br><br>
+
+        Gracias por llegar a mi vida de una forma tan inesperada y tan real. Y perdoname porque esto es muy poco, y ademas casi no te e dado tiempo ultimamente, pero a pesar de eso...
+        En tan poco tiempo te volviste un lugar seguro, una sonrisa automática
+        y una razón más para creer en todo lo bonito que todavía nos espera.<br><br>
+
+        Quiero seguir construyendo momentos contigo,
+        paso a paso, sin prisas… pero contigo.
+        </p>
+
+        <p>
+        Con cariño,<br>
+        Tu Joshi :3
+        </p>
+
+        <div class="heart">💗✨</div>
+    </div>
+
+</div>
+
+<script>
+const gift = document.getElementById("gift");
+const message = document.getElementById("message");
+const instructions = document.getElementById("instructions");
+
+let opened = false;
+let shakingPower = 0;
+let lastX = null;
+let lastY = null;
+
+function openGift(){
+    if(opened) return;
+    opened = true;
+
+    gift.classList.remove("shaking");
+    gift.style.display = "none";
+    instructions.style.display = "none";
+    message.style.display = "block";
+}
+
+/* --------- AGITAR CON EL DEDO (pantalla / mouse) --------- */
+
+gift.addEventListener("pointerdown", e=>{
+    lastX = e.clientX;
+    lastY = e.clientY;
+    shakingPower = 0;
+});
+
+gift.addEventListener("pointermove", e=>{
+    if(lastX === null) return;
+
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+
+    const distance = Math.sqrt(dx*dx + dy*dy);
+
+    if(distance > 15){
+        shakingPower += distance;
+        gift.classList.add("shaking");
+    }
+
+    if(shakingPower > 800){
+        openGift();
+    }
+
+    lastX = e.clientX;
+    lastY = e.clientY;
+});
+
+gift.addEventListener("pointerup", ()=>{
+    lastX = null;
+    lastY = null;
+    gift.classList.remove("shaking");
+});
+
+
+/* --------- AGITAR DE VERDAD EL CELULAR (acelerómetro) --------- */
+
+if(window.DeviceMotionEvent){
+
+    try{
+        if(typeof DeviceMotionEvent.requestPermission === "function"){
+
+            gift.addEventListener("click", ()=>{
+                DeviceMotionEvent.requestPermission().catch(()=>{}).then(()=>{
+                    startMotion();
+                });
+            });
+
+        }else{
+            startMotion();
+        }
+    }catch(e){}
+}
+
+function startMotion(){
+
+    let lastTime = 0;
+
+    window.addEventListener("devicemotion", e=>{
+
+        if(opened) return;
+
+        const acc = e.accelerationIncludingGravity;
+        if(!acc) return;
+
+        const force = Math.abs(acc.x||0) + Math.abs(acc.y||0) + Math.abs(acc.z||0);
+
+        const now = Date.now();
+
+        if(force > 22 && now - lastTime > 120){
+            shakingPower += force * 10;
+            gift.classList.add("shaking");
+            lastTime = now;
+        }
+
+        if(shakingPower > 900){
+            openGift();
+        }
+
+        if(force < 10){
+            gift.classList.remove("shaking");
+        }
+
+    });
+}
+
+</script>
+
+</body>
+</html>
